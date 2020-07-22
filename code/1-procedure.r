@@ -93,16 +93,6 @@ df = cbind(df, distances_pca)
 res = test_svmRadial(df, colnames(distances_pca), data_filter = data_filter, test_name=t_name)
 results = results %>% rbind(res)
 
-#### Distances -> PCA -> SVM
-t_name = 'distances_pca_svm'
-df = tps$df
-distances_raw = get_all_distances(df, x_coord_names, y_coord_names)
-distances_pca = perform_pca_and_filter(distances_raw, columns=NULL, max_explained_var=1)
-df = cbind(df, distances_pca)
-
-res = test_svmRadial(df, colnames(distances_pca), data_filter = data_filter, test_name=t_name)
-results = results %>% rbind(res)
-
 #### Distances -> Remove Colinear96 -> SVM
 t_name = 'distances_colinear96_svm'
 df = tps$df

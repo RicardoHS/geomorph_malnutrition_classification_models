@@ -202,7 +202,7 @@ remove_allometric_shape_effect = function(df, procrustes_object){
   po = procrustes_object
   x_df = data.frame(lm(matrix(po$coords[,1,],nrow = length(po$coords[1,1,])) ~ po$Csize)$residuals)
   y_df = data.frame(lm(matrix(po$coords[,2,],nrow = length(po$coords[1,1,])) ~ po$Csize)$residuals)
-  colnames(x_df) = sprintf("x_%s_allom",1:dim(gpa$coords)[1])
-  colnames(y_df) = sprintf("y_%s_allom",1:dim(gpa$coords)[1])
+  colnames(x_df) = sprintf("x_%s_allom",1:dim(po$coords)[1])
+  colnames(y_df) = sprintf("y_%s_allom",1:dim(po$coords)[1])
   cbind(df, x_df, y_df)
 }

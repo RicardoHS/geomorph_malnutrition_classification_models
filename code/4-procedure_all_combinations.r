@@ -75,8 +75,10 @@ CLASSIFICATION_MODEL = function(data, x_extra_columns=NULL){
   x_columns = c(colnames(data), x_extra_columns)
   x_data = cbind(data, DATA() %>% select(x_extra_columns, 'diagnosis'))
   
-  res = test_LOOCV_svmRadial(x_data, x_columns = x_columns, data_filter = data_filter, test_name=t_name)
-  res
+  res_svm = test_LOOCV_svmRadial(x_data, x_columns = x_columns, data_filter = data_filter, test_name=paste(t_name,'->SVM',sep=''))
+  res_rf = test_LOOCV_rf(x_data, x_columns = x_columns, data_filter = data_filter, test_name=paste(t_name,'->RF',sep=''))
+  res_nnet = test_LOOCV_nnet(x_data, x_columns = x_columns, data_filter = data_filter, test_name=paste(t_name,'->NNET',sep=''))
+  rbind(res_svm, res_rf, res_nnet)
 }
 
 #####
@@ -93,7 +95,7 @@ for(comb in diagnosis_combinations){
   ##################################################################################
   
   for(path in all_paths){
-    t_name = path$name %>% paste(collapse='->')
+    t_name = path$name[-c(1,length(path$name))] %>% paste(collapse='->')
     cat(t_name,'\n')
     
     method_data = DATA()

@@ -13,6 +13,7 @@ x_procrustes_coord_names = sprintf("x_%s_proc",1:length(x_coord_names))
 y_procrustes_coord_names = sprintf("y_%s_proc",1:length(y_coord_names))
 x_allom_coord_names = sprintf("x_%s_allom",1:length(x_coord_names))
 y_allom_coord_names = sprintf("y_%s_allom",1:length(y_coord_names))
+x_extra_columns = c('sex', 'age_group')
 
 diagnosis_combinations = combn(levels(tps$df$diagnosis), 2, simplify = FALSE)
 
@@ -71,7 +72,7 @@ ALLOMETRIC_SHAPE_REDUCTION = function(data){
   data %>% select(c(x_allom_coord_names, y_allom_coord_names))
 }
 
-CLASSIFICATION_MODEL = function(data, x_extra_columns=NULL){
+CLASSIFICATION_MODEL = function(data){
   x_columns = c(colnames(data), x_extra_columns)
   x_data = cbind(data, DATA() %>% select(x_extra_columns, 'diagnosis'))
   
@@ -81,13 +82,24 @@ CLASSIFICATION_MODEL = function(data, x_extra_columns=NULL){
   rbind(res_svm, res_rf, res_nnet)
 }
 
+CLASSIFICATION_MODEL_FULL = function(data){
+  x_columns = c(colnames(data), x_extra_columns)
+  x_data = cbind(data, DATA() %>% select(x_extra_columns, 'diagnosis'))
+  
+  res_svm = test_LOOCV_svmRadial(x_data, x_columns = x_columns, data_filter = data_filter, test_name=paste(t_name,'->SVM',sep=''), results_cols = c("Accuracy"))
+  res_rf = test_LOOCV_rf(x_data, x_columns = x_columns, data_filter = data_filter, test_name=paste(t_name,'->RF',sep=''), results_cols = c("Accuracy"))
+  res_nnet = test_LOOCV_nnet(x_data, x_columns = x_columns, data_filter = data_filter, test_name=paste(t_name,'->NNET',sep=''), results_cols = c("Accuracy"))
+  rbind(res_svm, res_rf, res_nnet)
+}
+
 #####
 
+# Binary-fashion way of modeling
 for(comb in diagnosis_combinations){
   cat('Diagnosis:', comb, '\n')
   data_filter = function(x) x %>% filter(diagnosis==comb[1] | diagnosis==comb[2])
   
-  results_cols = c("Accuracy", "Sensitivity","Specificity", "Precision", "Recall", "F1")
+  results_cols = c("Accuracy", "Specificity", "Precision", "Recall", "F1")
   results = data.frame(matrix(ncol = length(results_cols), nrow = 0))
   colnames(results) = results_cols
   
@@ -109,3 +121,29 @@ for(comb in diagnosis_combinations){
   write.csv(results,file=paste("results_",paste(comb,collapse='_'),'.csv', sep=''))
 }
 
+#################################################################################
+# Multiclass models
+data_filter = function(x) x
+
+
+##################################################################################
+##################################################################################
+
+for(path in all_paths){
+  
+  results_cols = c("Accuracy")
+  results = data.frame(matrix(ncol = length(results_cols), nrow = 0))
+  colnames(results) = results_cols
+  
+  t_name = path$name[-c(1,length(path$name))] %>% paste(collapse='->')
+  cat(t_name,'\n')
+  
+  method_data = DATA()
+  for(stage in path$name[-c(1,length(path$name))]){
+    method_data = match.fun(stage)(method_data)
+  }
+  results = results %>% rbind(CLASSIFICATION_MODEL_FULL(method_data))
+}
+
+print(results)
+write.csv(results,file="results_ALL_CLASES.csv")

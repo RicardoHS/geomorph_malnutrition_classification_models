@@ -1,1 +1,6 @@
 */data/*
+*.csv
+*.pdf
+*.png
+.Rhistory
+.RData

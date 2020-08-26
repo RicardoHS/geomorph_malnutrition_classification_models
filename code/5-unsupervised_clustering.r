@@ -66,8 +66,8 @@ ALLOMETRIC_SHAPE_REDUCTION = function(data){
 }
 #################3
 
-
-
+umap.config = umap::umap.defaults
+umap.config$n_neighbors = 25
 
 set.seed(42)
 for(path in all_paths){
@@ -77,32 +77,36 @@ for(path in all_paths){
     method_data = match.fun(stage)(method_data)
   }
   
-  df.umap = umap(method_data)
+  df.umap = umap(scale(method_data), config = umap.config)
   gg.data = data.frame(x=df.umap$layout[,1], y=df.umap$layout[,2], diagnosis=tps$df$diagnosis)
-  gg1 = ggplot(gg.data, aes(x=x,y=y, color=diagnosis)) + geom_jitter()  + geom_point() + ggtitle(t_name)
+  gg1 = ggplot(gg.data, aes(x=x,y=y, color=diagnosis)) + geom_jitter()  + geom_point(alpha = 1/10, size = 0.1, stroke = 0, shape = 16) + 
+    ggtitle(t_name, subtitle = '') + theme(plot.title = element_text(size = 8))
   
   df.umap = cbind(method_data, DATA() %>% select(sex))
   df.umap['sex'] = lapply(df.umap['sex'], factor)
   df.umap['sex'] = lapply(df.umap['sex'], as.numeric)
-  df.umap = umap(df.umap)
+  df.umap = umap(scale(df.umap), config = umap.config)
   gg.data = data.frame(x=df.umap$layout[,1], y=df.umap$layout[,2], diagnosis=tps$df$diagnosis)
-  gg2 = ggplot(gg.data, aes(x=x,y=y, color=diagnosis)) + geom_jitter()  + geom_point() + ggtitle(paste(t_name,'+ sex'))
+  gg2 = ggplot(gg.data, aes(x=x,y=y, color=diagnosis)) + geom_jitter()  + geom_point(alpha = 1/10, size = 0.1, stroke = 0, shape = 16) + 
+    ggtitle(t_name, subtitle = '+ sex') + theme(plot.title = element_text(size = 8))
   
   df.umap = cbind(method_data, DATA() %>% select(age_group))
   df.umap['age_group'] = lapply(df.umap['age_group'], factor)
   df.umap['age_group'] = lapply(df.umap['age_group'], as.numeric)
-  df.umap = umap(df.umap)
+  df.umap = umap(scale(df.umap), config = umap.config)
   gg.data = data.frame(x=df.umap$layout[,1], y=df.umap$layout[,2], diagnosis=tps$df$diagnosis)
-  gg3 = ggplot(gg.data, aes(x=x,y=y, color=diagnosis)) + geom_jitter()  + geom_point() + ggtitle(paste(t_name,'+ age_group'))
+  gg3 = ggplot(gg.data, aes(x=x,y=y, color=diagnosis)) + geom_jitter()  + geom_point(alpha = 1/10, size = 0.1, stroke = 0, shape = 16) + 
+    ggtitle(t_name, subtitle = '+ age_group') + theme(plot.title = element_text(size = 8))
   
   df.umap = cbind(method_data, DATA() %>% select(sex, age_group))
   df.umap['sex'] = lapply(df.umap['sex'], factor)
   df.umap['sex'] = lapply(df.umap['sex'], as.numeric)
   df.umap['age_group'] = lapply(df.umap['age_group'], factor)
   df.umap['age_group'] = lapply(df.umap['age_group'], as.numeric)
-  df.umap = umap(df.umap)
+  df.umap = umap(scale(df.umap), config = umap.config)
   gg.data = data.frame(x=df.umap$layout[,1], y=df.umap$layout[,2], diagnosis=tps$df$diagnosis)
-  gg4 = ggplot(gg.data, aes(x=x,y=y, color=diagnosis)) + geom_jitter()  + geom_point() + ggtitle(paste(t_name,'+ sex + age_group'))
+  gg4 = ggplot(gg.data, aes(x=x,y=y, color=diagnosis)) + geom_jitter()  + geom_point(alpha = 1/10, size = 0.1, stroke = 0, shape = 16) + 
+    ggtitle(t_name, subtitle = '+ sex + age_group')+ theme(plot.title = element_text(size = 8))
   
   gg_c = ggpubr::ggarrange(gg1, gg2, gg3, gg4, nrow = 2, ncol=2, common.legend = TRUE, legend="right")
   file_name = paste('../cluster_images/', t_name %>% str_replace('->','_'), '.png', sep='')

@@ -125,16 +125,14 @@ for(comb in diagnosis_combinations){
 # Multiclass models
 data_filter = function(x) x
 
+results_cols = c("Accuracy")
+results = data.frame(matrix(ncol = length(results_cols), nrow = 0))
+colnames(results) = results_cols
 
 ##################################################################################
 ##################################################################################
 
 for(path in all_paths){
-  
-  results_cols = c("Accuracy")
-  results = data.frame(matrix(ncol = length(results_cols), nrow = 0))
-  colnames(results) = results_cols
-  
   t_name = path$name[-c(1,length(path$name))] %>% paste(collapse='->')
   cat(t_name,'\n')
   

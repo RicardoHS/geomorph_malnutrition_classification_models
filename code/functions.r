@@ -125,12 +125,22 @@ get_noncolinear_columns = function(df, columns, max_percentage=0.80, plot_correl
   non_colinear_cols
 }
 
+get_distances_colnames = function(n_cols){
+  names = NULL
+  for(i in 1:(n_cols-1)){
+    for(j in (i+1):n_cols){
+      names = c(names, paste('LM',i,'toLM',j, sep=''))
+    }
+  }
+  return(names)
+}
+
 get_all_distances = function(df, x_coord_names, y_coord_names){
   distances = array(NA, dim=c(nrow(df), sum(1:(length(x_coord_names)-1))))
   for(i in 1:nrow(df)){
     distances[i,] = df[i,]%>% dplyr::select(x_coord_names, y_coord_names) %>% matrix(nrow = 2, byrow = TRUE) %>% t() %>% dist() %>% as.vector()
   }
-  
+  colnames(distances) = get_distances_colnames(length(x_coord_names))
   data.frame(distances)
 }
 

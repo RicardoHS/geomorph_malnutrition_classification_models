@@ -176,7 +176,7 @@ test_LOOCV_svmRadial = function(df, x_columns, data_filter, test_name,
   classes = unique(t_data$diagnosis)
   for(c in classes){
     total_c = clf$pred %>% filter(obs==c) %>% dim
-    correct_c = clf$pred %>% filter(obs==c) %>% mutate(correct = if_else(pred == obs, 1, 0)) %>% select(correct) %>% sum
+    correct_c = clf$pred %>% filter(obs==c) %>% mutate(correct = if_else(pred == obs, 1, 0)) %>% dplyr::select(correct) %>% sum
     result = result %>% mutate(!!paste(" total_",c,sep=""):=total_c[1], !!paste("correct_",c,sep=""):=correct_c)
   }
   
@@ -200,7 +200,7 @@ test_LOOCV_rf = function(df, x_columns, data_filter, test_name,
   classes = unique(t_data$diagnosis)
   for(c in classes){
     total_c = clf$pred %>% filter(obs==c) %>% dim
-    correct_c = clf$pred %>% filter(obs==c) %>% mutate(correct = if_else(pred == obs, 1, 0)) %>% select(correct) %>% sum
+    correct_c = clf$pred %>% filter(obs==c) %>% mutate(correct = if_else(pred == obs, 1, 0)) %>% dplyr::select(correct) %>% sum
     result = result %>% mutate(!!paste(" total_",c,sep=""):=total_c[1], !!paste("correct_",c,sep=""):=correct_c)
   }
   
@@ -224,7 +224,7 @@ test_LOOCV_nnet = function(df, x_columns, data_filter, test_name,
   classes = unique(t_data$diagnosis)
   for(c in classes){
     total_c = clf$pred %>% filter(obs==c) %>% dim
-    correct_c = clf$pred %>% filter(obs==c) %>% mutate(correct = if_else(pred == obs, 1, 0)) %>% select(correct) %>% sum
+    correct_c = clf$pred %>% filter(obs==c) %>% mutate(correct = if_else(pred == obs, 1, 0)) %>% dplyr::select(correct) %>% sum
     result = result %>% mutate(!!paste(" total_",c,sep=""):=total_c[1], !!paste("correct_",c,sep=""):=correct_c)
   }
   

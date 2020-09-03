@@ -121,28 +121,28 @@ for(x_extra_columns in list(NULL, c('sex'), c('age_group'), c('sex', 'age_group'
     write.csv(results,file=paste("../results/results_",paste(x_extra_columns,collapse='-'),"_",paste(comb,collapse='_'),'.csv', sep=''))
   }
   
-  #################################################################################
-  # Multiclass models
-  data_filter = function(x) x
-  
-  results_cols = c("Accuracy")
-  results = data.frame(matrix(ncol = length(results_cols), nrow = 0))
-  colnames(results) = results_cols
-  
-  ##################################################################################
-  ##################################################################################
-  
-  for(path in all_paths){
-    t_name = path$name[-c(1,length(path$name))] %>% paste(collapse='->')
-    cat(t_name,'\n')
-    
-    method_data = DATA()
-    for(stage in path$name[-c(1,length(path$name))]){
-      method_data = match.fun(stage)(method_data)
-    }
-    results = results %>% rbind(CLASSIFICATION_MODEL_FULL(method_data))
-  }
-  
-  print(results)
-  write.csv(results,file=paste("../results/results_",paste(x_extra_columns,collapse='-'),"_ALL_CLASES.csv", sep=""))
+  # #################################################################################
+  # # Multiclass models
+  # data_filter = function(x) x
+  # 
+  # results_cols = c("Accuracy")
+  # results = data.frame(matrix(ncol = length(results_cols), nrow = 0))
+  # colnames(results) = results_cols
+  # 
+  # ##################################################################################
+  # ##################################################################################
+  # 
+  # for(path in all_paths){
+  #   t_name = path$name[-c(1,length(path$name))] %>% paste(collapse='->')
+  #   cat(t_name,'\n')
+  #   
+  #   method_data = DATA()
+  #   for(stage in path$name[-c(1,length(path$name))]){
+  #     method_data = match.fun(stage)(method_data)
+  #   }
+  #   results = results %>% rbind(CLASSIFICATION_MODEL_FULL(method_data))
+  # }
+  # 
+  # print(results)
+  # write.csv(results,file=paste("../results/results_",paste(x_extra_columns,collapse='-'),"_ALL_CLASES.csv", sep=""))
 }

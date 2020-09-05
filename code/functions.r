@@ -171,7 +171,7 @@ test_svmRadial = function(df, x_columns, data_filter, test_name,
 }
 
 test_LOOCV_svmRadial = function(df, x_columns, data_filter, test_name, 
-                          results_cols = c("Accuracy",  "Specificity", "Precision", "Recall", "F1"), seed=42){
+                          results_cols = c("Accuracy",  "Specificity", "Precision", "Recall", "F1"), seed=42, return_model=FALSE){
   t_data = df %>% data_filter
   t_data$diagnosis = droplevels(t_data$diagnosis)
   
@@ -180,6 +180,9 @@ test_LOOCV_svmRadial = function(df, x_columns, data_filter, test_name,
   (formula = as.formula(paste('diagnosis ~ ', paste(x_columns, collapse = '+'))))
   train_control<- trainControl(method="LOOCV", savePredictions = 'final')
   clf <- train(formula, data = t_data, trControl=train_control, method = "svmRadial")
+  if(return_model){
+    return(clf)
+  }
   cm = caret::confusionMatrix(data=clf$pred$pred, reference = clf$pred$obs)
   result = c(cm$overall,cm$byClass) %>% t() %>% as.data.frame() %>% dplyr::select(results_cols)
   
@@ -195,7 +198,7 @@ test_LOOCV_svmRadial = function(df, x_columns, data_filter, test_name,
 }
 
 test_LOOCV_rf = function(df, x_columns, data_filter, test_name, 
-                                results_cols = c("Accuracy",  "Specificity", "Precision", "Recall", "F1"), seed=42){
+                                results_cols = c("Accuracy",  "Specificity", "Precision", "Recall", "F1"), seed=42, return_model=FALSE){
   t_data = df %>% data_filter
   t_data$diagnosis = droplevels(t_data$diagnosis)
   
@@ -204,6 +207,9 @@ test_LOOCV_rf = function(df, x_columns, data_filter, test_name,
   (formula = as.formula(paste('diagnosis ~ ', paste(x_columns, collapse = '+'))))
   train_control<- trainControl(method="LOOCV", savePredictions = 'final')
   clf <- train(formula, data = t_data, trControl=train_control, method = "rf", ntree = 50)
+  if(return_model){
+    return(clf)
+  }
   cm = caret::confusionMatrix(data=clf$pred$pred, reference = clf$pred$obs)
   result = c(cm$overall,cm$byClass) %>% t() %>% as.data.frame() %>% dplyr::select(results_cols)
   
@@ -219,7 +225,7 @@ test_LOOCV_rf = function(df, x_columns, data_filter, test_name,
 }
 
 test_LOOCV_nnet = function(df, x_columns, data_filter, test_name, 
-                         results_cols = c("Accuracy",  "Specificity", "Precision", "Recall", "F1"), seed=42){
+                         results_cols = c("Accuracy",  "Specificity", "Precision", "Recall", "F1"), seed=42, return_model=FALSE){
   t_data = df %>% data_filter
   t_data$diagnosis = droplevels(t_data$diagnosis)
   
@@ -228,6 +234,9 @@ test_LOOCV_nnet = function(df, x_columns, data_filter, test_name,
   (formula = as.formula(paste('diagnosis ~ ', paste(x_columns, collapse = '+'))))
   train_control<- trainControl(method = 'cv', number = 10, classProbs = TRUE, verboseIter = FALSE, savePredictions = 'final')
   clf <- train(formula, data = t_data, trControl=train_control, tuneGrid=expand.grid(size=c(2,4,5), decay=c(0.1,0.01)), method = "nnet", trace = FALSE) #,linout = TRUE)
+  if(return_model){
+    return(clf)
+  }
   cm = caret::confusionMatrix(data=clf$pred$pred, reference = clf$pred$obs)
   result = c(cm$overall,cm$byClass) %>% t() %>% as.data.frame() %>% dplyr::select(results_cols)
   

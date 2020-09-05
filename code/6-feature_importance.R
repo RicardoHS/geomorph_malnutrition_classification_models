@@ -14,16 +14,16 @@ cm = caret::confusionMatrix(data=clf$pred$pred, reference = clf$pred$obs)
 cm
 
 ############# PLOTS
-plot(varImp(clf), top=30)
+plot(varImp(clf), top=50)
 importance = varImp(clf)$importance[[1]]
 
 coord_plots_x = DATA()[1,] %>% dplyr::select(x_coord_names) %>% as_vector() 
 coord_plots_y = DATA()[1,] %>% dplyr::select(y_coord_names) %>% as_vector() 
 
-plot(coord_plots_x, coord_plots_y, bg="red", pch=21, asp=1)
-text(coord_plots_x, coord_plots_y, x_coord_names, cex=0.6, pos=4, col="red") 
+plot(coord_plots_x, coord_plots_y, bg="red", pch=21, asp=1, cex=1.5)
+text(coord_plots_x, coord_plots_y, x_coord_names, cex=0.8, pos=4, col="red") 
 
-most_important_distances = get_distances_colnames(length(x_coord_names))[order(importance, decreasing =TRUE)[1:4]]
+most_important_distances = get_distances_colnames(length(x_coord_names))[order(importance, decreasing =TRUE)[sample(1:100, 20)]]
 for(mid in most_important_distances){
   points = mid %>% str_remove('LM') %>% str_split('toLM') %>% unlist() %>% as.numeric()
   segments(coord_plots_x[points[1]], coord_plots_y[points[1]], 

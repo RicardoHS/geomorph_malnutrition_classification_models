@@ -1,11 +1,15 @@
-library(MASS) # para lda
+library(MASS) # for lda
 library(caret) # models and classification utils
 
+# custom utils
 source('functions.r')
 
+#here you have to change the path to use your own data. Probably you will need to tune the read_tps function inside functions.r
 file_path = './data/Muestra_563_UC3M_fixed.TPS'
 
 tps = read_tps(file_path, remove_point_5 = TRUE, n_cases = 563)
+
+# some columns names to use it latter
 x_coord_names = tps$x_colnames
 y_coord_names = tps$y_colnames
 x_procrustes_coord_names = sprintf("x_%s_proc",1:length(x_coord_names))
@@ -13,6 +17,7 @@ y_procrustes_coord_names = sprintf("y_%s_proc",1:length(y_coord_names))
 x_allom_coord_names = sprintf("x_%s_allom",1:length(x_coord_names))
 y_allom_coord_names = sprintf("y_%s_allom",1:length(y_coord_names))
 
+# compute all the diagnosis types combinations
 diagnosis_combinations = combn(levels(tps$df$diagnosis), 2, simplify = FALSE)
 
 for(comb in diagnosis_combinations){
@@ -27,6 +32,7 @@ for(comb in diagnosis_combinations){
   ##################################################################################
   
   #### Procrustes  -> SVM
+  # test name
   t_name = 'procrustes_svm'
   df = tps$df
   

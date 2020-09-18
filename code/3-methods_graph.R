@@ -1,3 +1,6 @@
+# script to compute the methodological graph combination
+
+
 library(igraph)
 
 methods_graph = graph_from_literal(DATA-+DISTANCES, 

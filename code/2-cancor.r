@@ -1,6 +1,10 @@
+# script used to compute the canonical correlation
+# not used on the final document
+
+
 library('CCA')
 
-library(MASS) # para lda
+library(MASS) # for lda
 library(caret) # models and classification utils
 
 source('functions.r')

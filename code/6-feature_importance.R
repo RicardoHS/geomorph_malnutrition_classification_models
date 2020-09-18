@@ -1,3 +1,6 @@
+# script used to generate the distance feautre importance. 
+# Need to be used on the rstudio because some variables are from the 4-procedure_all_combinations script
+
 ############## MODELING
 df = cbind(DISTANCES(DATA()), DATA() %>% dplyr::select(diagnosis, sex, age_group))
 x_columns = c(colnames(DISTANCES(DATA())), 'sex', 'age_group')

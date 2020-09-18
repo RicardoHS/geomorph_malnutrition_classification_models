@@ -1,3 +1,5 @@
+# script used to generate the analysis by sex and age_group using the best models
+
 library(MASS) # para lda
 library(caret) # models and classification utils
 library(igraph)
@@ -272,8 +274,8 @@ diag=c('RIS','SAM')
 x_extra_columns = c('sex', 'age_group')
 data_filter = function(x) x %>% filter(diagnosis==diag[1] | diagnosis==diag[2])
 clf = NNET(PCA(DISTANCES(DATA())), return_model = TRUE)
-is_correct = clf$pred$pred==clf$pred$obs
 df = DATA() %>% data_filter
+is_correct = clf$pred$pred==clf$pred$obs
 df[clf$pred$rowIndex,'is_correct'] = is_correct
 plots[[6]] = ggplot(df, aes(x=sex, fill=factor(is_correct))) + 
   geom_bar(position = 'fill') + 

@@ -1,3 +1,5 @@
+# script to repeat the experiments but using the state of the art methods
+
 library(MASS) # para lda
 library(caret) # models and classification utils
 library(igraph)

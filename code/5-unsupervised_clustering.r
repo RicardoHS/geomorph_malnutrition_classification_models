@@ -1,3 +1,5 @@
+# script to generate the umap plots used on the document
+
 library('igraph')
 library('umap')
 library('tidyverse')

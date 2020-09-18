@@ -1,9 +1,9 @@
 library(geomorph) # procrustes but with geomorph https://rdrr.io/cran/geomorph/man/gpagen.html
-library(tidyverse) # para manejar las estructuras de datos mejor
+library(tidyverse)
 library(corrplot)
 
 sed_image = function(filepath){
-  # cambia espacios por guiones en lineas que empiezan por "IMAGE="
+  # swap spaces for hyphens in lines beginning with "IMAGE="
   sed_file = NULL
   con = file(filepath, "r")
   while ( TRUE ) {
@@ -22,74 +22,75 @@ sed_image = function(filepath){
 
 
 read_tps = function(file_path, rows_by_case = 24, n_cases = 10, remove_point_5=TRUE){
-# Esta funcion lee los datos del archivo .tps y los transforma en un dataframe ordenado 
-  # lee el tps como si fuese un .csv, el archivo no es del todo correcto pero es un buen punto de entrada.
+# This function reads the data from the .tps file and transforms it into an ordered dataframe
+  # See the tps as if it were a .csv, the file is not quite correct but it is a good entry point.
   sed_file = sed_image(file_path)
   data = read.csv(text=sed_file, sep = " ", header = FALSE)
   
-  # esta parte selecciona la linea del tps que empieza por IMAGE= y le hace una serie de transformaciones, por orden:
-  # data[((1:n_cases)*rows_by_case)-1,] - selecciona las rows. Esto devuelve un dataframe con dos columnas cuando deberia ser una (porq el read.csv no nos hace todo el trabajo)
-  # unite('image', sep="") - Junta las dos columnas en una nueva llamada image.
-  # t() - Transpone el dataframe para la siguiente transformacion
-  # as.vector() - convierte el dataframe transpuesto en un vector, que es lo que necesitan las siguientes funciones
-  # str_remove('IMAGE=') - Elimina IMAGE= de todos los elementos del vector
-  # str_replace(" ", "-") - Cambia los espacios en blanco por guiones (algunos nombres de pueblo tienen espacio y eso no es bueno para las transformaciones de datos)
-  # str_split('_', simplify = TRUE) - Divide cada elemento en columnas basandose en el guion bajo para dividirlo. Esto genera una matriz
-  # as.data.frame() - Convierte la matriz en dataframe
+  # this part selects the line of the tps that starts with IMAGE = and performs a series of transformations, in order:
+  # data [((1: n_cases) * rows_by_case) -1,] - select the rows. This returns a dataframe with two columns when it should be one (because the read.csv doesn't do all the work for us)
+  # unite ('image', sep = "") - Join the two columns in a new image call.
+  # t () - Transpose the dataframe for the next transformation
+  # as.vector () - converts the transposed dataframe to a vector, which is what the following functions need
+  # str_remove ('IMAGE =') - Remove IMAGE = from all vector elements
+  # str_replace ("", "-") - Change whitespace to hyphens (some town names have spaces and that's not good for data transformations)
+  # str_split ('_', simplify = TRUE) - Split each element into columns based on the underscore to split it. This generates an array
+  # as.data.frame () - Converts array to dataframe
   # generate the tidy df from the IMAGE str
   df = data[((1:n_cases)*rows_by_case)-1,] %>% unite('image', sep="") %>% t() %>% as.vector() %>% 
     str_remove('IMAGE=') %>% 
     str_replace(" ", "-") %>% 
     str_split('_', simplify = TRUE) %>% 
     as.data.frame()
-  # pone nombres a las columnas del dataframe
+  # names the columns of the dataframe
   colnames(df) = c('country', 'region','village','body_part','participant', 'sex', 'age_group', 'crit', 'diagnosis', 'ethny')
   
-  # add the scales - Añade una columna nueva llamada scales al dataframe 
+  # add the scales - add a new column called scales to the dataframe
   df$scales = data[(1:n_cases)*rows_by_case, 1] %>% t() %>% as.vector() %>% str_remove('SCALE=') %>% as.numeric()
   
   # add the data points
-  # otro problema del read.csv. Todos los LM los ha tratado como factores en vez de numericos.
-  # aqui calculamos los indices de las rows del dataframe que no son LM, es decir las lineas que empiezan con LM= IMAGE= SCALE=
+  # another read.csv problem. All LMs have been treated as factors rather than numerical.
+  # here we calculate the indices of the rows of the dataframe that are not LM, that is, the lines that start with LM= IMAGE= SCALE=
   excluded_rows = c(((0:(n_cases-1))*rows_by_case)+1, ((0:(n_cases-1))*rows_by_case)+23, ((0:(n_cases-1))*rows_by_case)+24)
-  # aqui seleccionamos con -excluded_rows todas las columnas que no son los casos excluidos de la linea anterior, es decir, los LM y las convertimos a numerico
+  # here we select with -excluded_rows all the columns that are not the excluded cases of the previous line, that is, the MLs and convert them to numeric
   data_points = data[-excluded_rows,] %>% lapply(function(x) as.numeric(as.character(x)))
   
-  # para añadir todos los puntos al dataframe de forma mas simple. 
-  # Generamos una matriz con los puntos x y la convertimos a dataframe
+  # to add all the points to the dataframe more simply.
+  # We generate a matrix with the x points and convert it to a dataframe
   x = matrix(data_points$V1, nrow = n_cases, byrow = TRUE) %>% as.data.frame()
   if(remove_point_5){
     x = x[,-5]
   }
-  # ponemos nombres a las columnas
+  #we name the columns
   colnames(x) = sprintf("x_%s",seq(1:dim(x)[2]))
-  # Generamos una matriz con los puntos y y la convertimos a dataframe
+  # we generate a matrix with the points and convert it to dataframe
   y = matrix(-data_points$V2, nrow = n_cases, byrow = TRUE)%>% as.data.frame()
   if(remove_point_5){
     y = y[,-5]
   }
   colnames(y) = sprintf("y_%s",seq(1:dim(y)[2]))
   
-  # juntamos el dataframe que teniamos con los dataframe de los puntos LM
+  # we put together the dataframe we had with the dataframe of the LM points
   list(df = cbind(df,x,y), x_colnames=colnames(x), y_colnames=colnames(y))
 }
 
 
 perform_procrustes = function(df, x_coord_names, y_coord_names, plot_procrustes=FALSE, return_object=FALSE){
+  # perform generalized procrustes analysis
   A = array(NA, dim=c(length(x_coord_names),2,nrow(df)))
   for(i in 1:nrow(df)){
     A[,1,i] = df[i,] %>% dplyr::select(x_coord_names) %>% as.vector() %>% as.numeric() 
     A[,2,i] = df[i,] %>% dplyr::select(y_coord_names) %>% as.vector() %>% as.numeric() 
   }
   
-  # ahcemos gpa
+  # perform gpa
   gpa = gpagen(A)
   p_gpa = gpa$coords
   if(plot_procrustes){
     plot(gpa)
   }
   
-  # añadimos las coordenadas procurstes al dataframe
+  # we add the procurstes coordinates to the dataframe
   for(i in 1:length(x_coord_names)){
     df[, sprintf('x_%s_proc', i)] = as.vector(p_gpa[i,1,])
     df[, sprintf('y_%s_proc', i)] = as.vector(p_gpa[i,2,])
@@ -104,7 +105,7 @@ perform_procrustes = function(df, x_coord_names, y_coord_names, plot_procrustes=
 
 
 get_noncolinear_columns = function(df, columns, max_percentage=0.80, plot_correlation=FALSE){
-  # nos libramos de las coordenadas que tienen una correlacion muy alta
+  # Feautre Colinearity Trim: get rid of the coordinates that have a very high correlation
   if(!is.null(columns)){
     df = df %>% dplyr::select(columns)
   }else{
@@ -126,6 +127,7 @@ get_noncolinear_columns = function(df, columns, max_percentage=0.80, plot_correl
 }
 
 get_distances_colnames = function(n_cols){
+  # Compute the distance matrix column names (just the names no the matrix)
   names = NULL
   for(i in 1:(n_cols-1)){
     for(j in (i+1):n_cols){
@@ -136,6 +138,7 @@ get_distances_colnames = function(n_cols){
 }
 
 get_all_distances = function(df, x_coord_names, y_coord_names){
+  # Compute the distance matrix
   distances = array(NA, dim=c(nrow(df), sum(1:(length(x_coord_names)-1))))
   for(i in 1:nrow(df)){
     distances[i,] = df[i,]%>% dplyr::select(x_coord_names, y_coord_names) %>% matrix(nrow = 2, byrow = TRUE) %>% t() %>% dist() %>% as.vector()
@@ -145,7 +148,7 @@ get_all_distances = function(df, x_coord_names, y_coord_names){
 }
 
 get_train_test_split = function(df, split_percentage=1/3){
-  # seleccionamos los datos que queremos
+  # split data on train-test
   train_index <- sample(1:nrow(df), split_percentage * nrow(df))
   t_train <- df[train_index, ]
   t_test <- df[-train_index, ]
@@ -155,6 +158,7 @@ get_train_test_split = function(df, split_percentage=1/3){
 test_svmRadial = function(df, x_columns, data_filter, test_name, 
                           results_cols = c("Accuracy","Specificity", "Precision", "Recall", "F1"),
                           split_percetange=0.66,  seed=42){
+  # perform SVM test using simple train-test split
   t_data = df %>% data_filter
   t_data$diagnosis = droplevels(t_data$diagnosis)
   
@@ -172,6 +176,7 @@ test_svmRadial = function(df, x_columns, data_filter, test_name,
 
 test_LOOCV_svmRadial = function(df, x_columns, data_filter, test_name, 
                           results_cols = c("Accuracy",  "Specificity", "Precision", "Recall", "F1"), seed=42, return_model=FALSE){
+  # perform SVM test using leave one out cross validation
   t_data = df %>% data_filter
   t_data$diagnosis = droplevels(t_data$diagnosis)
   
@@ -199,6 +204,7 @@ test_LOOCV_svmRadial = function(df, x_columns, data_filter, test_name,
 
 test_LOOCV_rf = function(df, x_columns, data_filter, test_name, 
                                 results_cols = c("Accuracy",  "Specificity", "Precision", "Recall", "F1"), seed=42, return_model=FALSE){
+  # perform random forest test using leave one out cross validation
   t_data = df %>% data_filter
   t_data$diagnosis = droplevels(t_data$diagnosis)
   
@@ -226,6 +232,7 @@ test_LOOCV_rf = function(df, x_columns, data_filter, test_name,
 
 test_LOOCV_nnet = function(df, x_columns, data_filter, test_name, 
                          results_cols = c("Accuracy",  "Specificity", "Precision", "Recall", "F1"), seed=42, return_model=FALSE){
+  # perform neural network test using leave one out cross validation
   t_data = df %>% data_filter
   t_data$diagnosis = droplevels(t_data$diagnosis)
   
@@ -252,6 +259,7 @@ test_LOOCV_nnet = function(df, x_columns, data_filter, test_name,
 }
 
 perform_pca_and_filter = function(df, columns, max_explained_var=0.95){
+  # compute PCA and reduce dimensionality till max_explained_var is reached
   if(!is.null(columns)){
     df = df %>% dplyr::select(columns)
   }else{
@@ -265,6 +273,7 @@ perform_pca_and_filter = function(df, columns, max_explained_var=0.95){
 }
 
 remove_allometric_shape_effect = function(df, procrustes_object){
+  # remove the allometric shape effect
   po = procrustes_object
   x_df = data.frame(lm(matrix(po$coords[,1,],nrow = length(po$coords[1,1,])) ~ po$Csize)$residuals)
   y_df = data.frame(lm(matrix(po$coords[,2,],nrow = length(po$coords[1,1,])) ~ po$Csize)$residuals)

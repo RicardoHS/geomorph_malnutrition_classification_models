@@ -1,5 +1,7 @@
 # Classification models for landmarks configurations. Geometric morphometrics applied to acute malnutrition diagnosis.
 
+[Link to PDF](https://github.com/RicardoHS/geomorph_malnutrition_classification_models/blob/master/document.pdf)
+
 ### Author:
  - Ricardo Hortelano Sánchez
 
